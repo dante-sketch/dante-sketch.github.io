@@ -14,3 +14,9 @@ import os
 print("hello world")
 print(1+1=3)
 ```
+
+```ruby
+require 'redcarpet'
+markdown = Redcarpet.new("Hello World!")
+puts markdown.to_html
+```

@@ -9,3 +9,5 @@ kramdown:
   syntax_highlighter: rouge
   extensions: fenced_code_blocks
 
+sass:
+    style: compressed

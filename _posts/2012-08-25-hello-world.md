@@ -9,7 +9,7 @@
 
 <p>{{ page.date | date_to_string }}</p>
 
-```python
+```py
 import os
 print("hello world")
 print(1+1=3)

@@ -5,9 +5,10 @@ markdown: kramdown
 highlighter: rouge
 kramdown:
   input: GFM
-  hard_wrap: false
   syntax_highlighter: rouge
   extensions: fenced_code_blocks
+  syntax_highlighter_opts:
+    css_class: 'highlight'
 
 sass:
     style: compressed

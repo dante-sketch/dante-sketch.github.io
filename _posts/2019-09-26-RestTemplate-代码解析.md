@@ -1,3 +1,8 @@
+---
+　　layout: post
+　　title: 你好，世界
+---
+
 ## 前言
 	为什么 RestTemplate 提供简洁api同时，又可高度可展? 主要是使用了如下的设计模式:  
 

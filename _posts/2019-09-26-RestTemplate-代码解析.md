@@ -1,5 +1,6 @@
 ## 前言
 	为什么 RestTemplate 提供简洁api同时，又可高度可展? 主要是使用了如下的设计模式:  
+
 创建  
 - factory 工厂模式
 
@@ -235,8 +236,6 @@ final class SimpleBufferingClientHttpRequest extends AbstractBufferingClientHttp
 #### 权限验证
 RestTemplate 基于工厂模式和 责任链模式，提供了很好的扩展性。基于此我们可以做很多的事情，比如刚才的权限验证:
 
-{% highlight java linenos %}
-
 ```java
 public class BasicAuthenticationInterceptor implements ClientHttpRequestInterceptor {
 
@@ -274,6 +273,5 @@ public class BasicAuthenticationInterceptor implements ClientHttpRequestIntercep
 }
 ```
 
-{% endhighlight %}
 
 #### 负载均衡LoadBalance

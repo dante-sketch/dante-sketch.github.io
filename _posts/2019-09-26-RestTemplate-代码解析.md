@@ -277,4 +277,3 @@ public class BasicAuthenticationInterceptor implements ClientHttpRequestIntercep
 {% endhighlight %}
 
 #### 负载均衡LoadBalance
-

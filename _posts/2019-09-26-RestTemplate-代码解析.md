@@ -4,12 +4,13 @@
 ---
 
 ## 前言
-  为什么 RestTemplate 提供简洁api同时，又可高度可展? 主要是使用了这些设计模式:  factory 工厂模式(创建) Chain of responsibility 责任链模式(行为)
+  为什么 RestTemplate 提供简洁api同时，又可高度可展? 主要是使用了这些设计模式:  factory 工厂模式(创建), Chain of responsibility 责任链模式(行为)
 
 我们从请求的创建到返回响应给client的顺序，介绍 RestTemplate 所使用的设计模式.
 
 ### 请求创建
-RestTemplate 使用 factory 模式，来**创建** http request,这样的好处是，我们可以针对 http request 选择不同的实现、添加丰富的功能。
+RestTemplate 使用 factory 模式来**创建** http request,这样的好处是: 我们面向接口ClientHttpRequest编程，减少对具体实现的依赖。当需要切换具体的实现或者添加功能的时候，可以减少修改调用方的代码(只需要切换factory)。
+
 目前常见的factory有:
 - SimpleClientHttpRequestFactory (使用jdk自带的http工具,可设置代理)
 - BufferingClientHttpRequestFactory(能够重复读io流的factory，基于装饰器模式)
@@ -22,22 +23,22 @@ InterceptingClientHttpRequestFactory 封装了SimpleClientHttpRequestFactory,在
 在下面示例的请求中，我们创建一个拦截器，通过debug源代码，我们可以了解factory、拦截器是如何应用的。
 
 ```java
-//拦截器
-public interface ClientHttpRequestInterceptor {
-	/**
-     * 通过拦截器，我们可以修改 HttpRequest 和 ClientHttpResponse
-     */
-	ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
-			throws IOException;
-
-}
-
+// 创建一个请求，并使用一个拦截器添加授权验证Authentication头部
 public void createRequest(){
 	RestTemplate restTemplate = new RestTemplate();
 	List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
 	interceptors.add(new BasicAuthenticationInterceptor("userName","password"));
     // debug 进入 getForObject方法,最终到doExecute方法
 	String html = restTemplate.getForObject("https://dante-sketch.github.io/",String.class);
+}
+
+//拦截器的定义
+public interface ClientHttpRequestInterceptor {
+	/**
+     * 通过拦截器，我们可以修改 HttpRequest 和 ClientHttpResponse
+     */
+	ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+			throws IOException;
 }
 ```
 RestTemplate 暴露对外的方法，最终都会变成调用RestTemplate的doExecute方法. doExecute 使用createRequest方法创建 ClientHttpRequest.
@@ -273,4 +274,46 @@ public class BasicAuthenticationInterceptor implements ClientHttpRequestIntercep
 ```
 
 #### 负载均衡LoadBalance
+负载均衡的主要内容就是: (在服务注册发现系统中)获取服务器列表，然后根据指定的负载均衡算法，选择一台服务器。 然后将请求的url修改为指向被选中的服务器。
+比如，将 https://userService/user/123	重新修改为: https://192.168.1.100:8080/user/123.  
 
+
+那么，这个机制是如何运作的呢? 这个就得说说 ```org.springframework.cloud.client.loadbalancer``` 包里面3个核心的类了:
+- LoadBalancerInterceptor (该拦截器用于实现负载均衡)
+- LoadBalancerRequestFactory 用于创建负载均衡的请求
+- LoadBalancerClient (仅仅是接口，用户可选择不同实现，比如 robbin)
+
+当LoadBalancerInterceptor拦截了请求以后，LoadBalancerInterceptor 委托 LoadBalancerRequestFactory 创造负载均衡的请求，然后解析 url 中的serviceId,
+最后调用 LoadBalancerClient 来执行真正的负载均衡。
+```java
+// 理解LoadBalance 拦截器，基本就知道了 RestTemplate 是如何实现负载均衡的了。
+public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor {
+
+	private LoadBalancerClient loadBalancer;
+	private LoadBalancerRequestFactory requestFactory;
+
+	public LoadBalancerInterceptor(LoadBalancerClient loadBalancer, LoadBalancerRequestFactory requestFactory) {
+		this.loadBalancer = loadBalancer;
+		this.requestFactory = requestFactory;
+	}
+
+	public LoadBalancerInterceptor(LoadBalancerClient loadBalancer) {
+		// for backwards compatibility
+		this(loadBalancer, new LoadBalancerRequestFactory(loadBalancer));
+	}
+
+	@Override
+	public ClientHttpResponse intercept(final HttpRequest request, final byte[] body,
+			final ClientHttpRequestExecution execution) throws IOException {
+		final URI originalUri = request.getURI();
+		// 获取 host 作为 service 的 id
+		String serviceName = originalUri.getHost();
+		Assert.state(serviceName != null, "Request URI does not contain a valid hostname: " + originalUri);
+		// loadBalancer 会根据 service id(serviceName)，结合服务发现机制找到相应的服务器列表，
+	    // LoadBalancerClient 根据不同负载均衡算法选择一个服务器，然后重新修改url以定向到被选择的服务器，最终发送请求,返回响应
+		return this.loadBalancer.execute(serviceName, requestFactory.createRequest(request, body, execution));
+	}
+}
+```
+LoadBalancerClient 是一个接口,定义了client端的负载均衡器。
+下一篇文章，我们会探讨一个具体的负载均衡实现的例子，介绍 **服务注册发现机制** 和 基于服务发现的负载均衡robbin.

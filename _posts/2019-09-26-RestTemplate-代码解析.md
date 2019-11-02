@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "RestTemplate 代码解析"
+description: "剖析 RestTemplate 的实现机制，学习设计模式的实践"
 keywords: RestTemplate,source,analysis
 tags: RestTemplate 代码解析
 ---

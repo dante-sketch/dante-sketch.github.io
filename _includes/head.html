@@ -1,11 +1,12 @@
 <!--	from http://jovandeginste.github.io/2016/05/18/add-metadata-tags-to-jekyll-blog-posts.html --> 
+  {% if page.title %}
+  	<title> {{page.title}} </title>
+  {% endif %}
 
   {% if page.description %}
   	<meta name="description" content="{{page.description}}">
   {% endif %}
-  {% if page.title %}
-  	<meta name="title" content="{{page.title}}">
-  {% endif %}
+
   <meta property="og:site_name" content="{{ site.title }}">
   {% if page.title %}
   <meta property="og:title" content="{{ page.title }}">

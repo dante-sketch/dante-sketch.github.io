@@ -1,7 +1,6 @@
 ---
-　　layout: post
-　　title: "RestTemplate 代码解析"
-    description: "解析 RestTemplate的实现机制，以及如何通过责任链模式提供扩展性"
+layout: post
+title: "RestTemplate 代码解析"
 ---
 
 ## 前言

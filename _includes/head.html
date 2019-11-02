@@ -1,7 +1,8 @@
 <!--	from http://jovandeginste.github.io/2016/05/18/add-metadata-tags-to-jekyll-blog-posts.html --> 
 
-  <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
-
+  {% if page.description %}
+  <meta name="description" content="{{page.description}}">
+  {% endif %}
   <meta property="og:site_name" content="{{ site.title }}">
   {% if page.title %}
   <meta property="og:title" content="{{ page.title }}">

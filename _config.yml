@@ -1,5 +1,11 @@
 baseurl: ""
 
+# Name of website
+title: 分享编程、产品知识
+
+# Short description of your site
+description: 长大后，你用实际行动成了自己喜欢的人了吗?
+
 # Conversion
 markdown: kramdown
 highlighter: rouge
@@ -12,3 +18,6 @@ kramdown:
 
 sass:
     style: compressed
+
+plugins:
+  - jekyll-sitemap
